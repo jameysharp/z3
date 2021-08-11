@@ -1212,7 +1212,7 @@ bool bit_blaster_tpl<Cfg>::mk_const_case_multiplier(unsigned sz, expr * const * 
     ptr_buffer<expr, 128> nb_bits;
     nb_bits.append(sz, b_bits);
     mk_const_case_multiplier(true, 0, sz, na_bits, nb_bits, out_bits); 
-    return false;
+    return true;
 }
  
 template<typename Cfg>
@@ -1222,7 +1222,7 @@ void bit_blaster_tpl<Cfg>::mk_const_case_multiplier(bool is_a, unsigned i, unsig
     while (!is_a && i < sz && is_bool_const(b_bits[i])) ++i;
     if (i < sz) {
         expr_ref_vector out1(m()), out2(m());
-        expr_ref x(m());
+        expr_ref x(m()), tmp(m());
         x = is_a?a_bits[i]:b_bits[i];
         if (is_a) a_bits[i] = m().mk_true(); else b_bits[i] = m().mk_true();
         mk_const_case_multiplier(is_a, i+1, sz, a_bits, b_bits, out1);
@@ -1231,7 +1231,8 @@ void bit_blaster_tpl<Cfg>::mk_const_case_multiplier(bool is_a, unsigned i, unsig
         if (is_a) a_bits[i] = x; else b_bits[i] = x;
         SASSERT(out_bits.empty());
         for (unsigned j = 0; j < sz; ++j) {
-            out_bits.push_back(m().mk_ite(x, out1[j].get(), out2[j].get()));
+            mk_ite(x, out1[j].get(), out2[j].get(), tmp);
+            out_bits.push_back(tmp);
         }        
     }
     else {
