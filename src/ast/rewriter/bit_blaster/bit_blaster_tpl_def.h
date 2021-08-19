@@ -1213,26 +1213,28 @@ bool bit_blaster_tpl<Cfg>::mk_const_case_multiplier(unsigned sz, expr * const * 
         return false;
 
     std::sort(variables.begin(), variables.end());
-    mk_const_case_multiplier(0, variables, a, b, sz, out_bits);
+    mk_const_case_multiplier(variables.size(), variables, a, b, sz, out_bits);
     return true;
 }
  
 template<typename Cfg>
 void bit_blaster_tpl<Cfg>::mk_const_case_multiplier(unsigned i, vector< std::pair< unsigned, expr * > > & variables, numeral & a, numeral & b, unsigned sz, expr_ref_vector & out_bits) {
-    if (i >= variables.size()) {
+    if (i == 0) {
         num2bits(a * b, sz, out_bits);
         return;
     }
+
+    --i;
 
     expr_ref_vector out0(m()), out1(m());
     auto & variable = variables[i];
     numeral & n = (variable.first & 1) ? b : a;
     numeral bit = power(variable.first >> 1);
 
-    mk_const_case_multiplier(i + 1, variables, a, b, sz, out0);
+    mk_const_case_multiplier(i, variables, a, b, sz, out0);
     n += bit;
 
-    mk_const_case_multiplier(i + 1, variables, a, b, sz, out1);
+    mk_const_case_multiplier(i, variables, a, b, sz, out1);
     n -= bit;
 
     SASSERT(out_bits.empty());
